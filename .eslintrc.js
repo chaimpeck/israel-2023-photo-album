@@ -28,6 +28,25 @@ module.exports = {
   plugins: ['react'],
   rules: {
     '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/no-confusing-void-expression': [
+      'warn',
+      {
+        ignoreArrowShorthand: true,
+      },
+    ],
+    '@typescript-eslint/no-unused-vars': 'warn',
+    'sort-imports': [
+      'error',
+      {
+        ignoreCase: true,
+        ignoreDeclarationSort: true,
+      },
+    ],
+    'sort-keys': [
+      'warn',
+      'asc',
+      { caseSensitive: true, minKeys: 2, natural: false },
+    ],
   },
   settings: {
     react: {

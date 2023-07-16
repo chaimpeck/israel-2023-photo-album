@@ -20,8 +20,12 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
+  "exclude": [
+    "build",
+  ],
   "include": [
     "src",
-    ".eslintrc.js"
+    ".eslintrc.js",
+    "types.d.ts"
   ]
 }
