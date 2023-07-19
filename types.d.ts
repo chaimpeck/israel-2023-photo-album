@@ -1,7 +1,15 @@
+interface Media {
+  fullSrc: string;
+  fullDim: { height: number; width: number };
+  thumbnailSrc: string;
+  thumbnailDim: { height: number; width: number };
+}
+
 interface MediaEvent {
-  baseDirectory: string;
+  baseUrl: string;
   mediaGroups: Array<{
-    media: string[];
+    description: string;
+    media: Media[];
     title: string;
   }>;
   title: string;
