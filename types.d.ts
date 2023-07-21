@@ -5,12 +5,19 @@ interface Media {
   thumbnailDim: { height: number; width: number };
 }
 
+type MediaManifest = Record<string, Media>;
+
 interface MediaEvent {
   baseUrl: string;
   mediaGroups: Array<{
     description: string;
-    media: Media[];
+    media: string[];
     title: string;
   }>;
   title: string;
+}
+
+interface MediaEventData {
+  mediaEvents: MediaEvent[];
+  mediaManifest: MediaManifest;
 }
