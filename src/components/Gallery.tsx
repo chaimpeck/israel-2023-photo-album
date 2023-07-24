@@ -17,7 +17,7 @@ export function Gallery({ mediaEvent, mediaManifest }: GalleryProps) {
       <p>{description}</p>
       <PhotoAlbum
         layout="columns"
-        columns={4}
+        columns={5}
         photos={media.map(mediaKey => ({
           height: mediaManifest[mediaKey].thumbnailDim.height,
           src: mediaManifest[mediaKey].thumbnailSrc,

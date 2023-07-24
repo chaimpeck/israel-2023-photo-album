@@ -118,7 +118,6 @@ def main():
                     "media": [],
                     "title": next_media_group["title"],
                 }
-                print("setting current_media_group to ", current_media_group)
                 next_media_group = next(album_media_groups, None)
 
             current_media_group["media"].append(media_item)
@@ -142,16 +141,11 @@ def main():
     ordered_media_events = [
         media_events_lookup[event_title] for event_title in event_order
     ]
-    remaining_media_events = [
-        media_event
-        for media_event in media_events
-        if media_event["title"] not in ordered_media_events
-    ]
 
     with open("starter-media-events.json", "w") as f:
         json.dump(
             {
-                "mediaEvents": ordered_media_events + remaining_media_events,
+                "mediaEvents": ordered_media_events,
                 "mediaManifest": media_manifest,
             },
             f,
