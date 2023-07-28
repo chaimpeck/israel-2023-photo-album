@@ -3,9 +3,14 @@ import PhotoAlbum from 'react-photo-album';
 interface GalleryProps {
   mediaEvent: MediaEvent;
   mediaManifest: MediaManifest;
+  onClickImage: (imgSrc: string) => void;
 }
 
-export function Gallery({ mediaEvent, mediaManifest }: GalleryProps) {
+export function Gallery({
+  mediaEvent,
+  mediaManifest,
+  onClickImage,
+}: GalleryProps) {
   const { mediaGroups } = mediaEvent;
 
   const getMediaKey = (filename: string) =>
@@ -18,6 +23,9 @@ export function Gallery({ mediaEvent, mediaManifest }: GalleryProps) {
       <PhotoAlbum
         layout="columns"
         columns={5}
+        onClick={({ index }) =>
+          onClickImage(mediaManifest[media[index]].fullSrc)
+        }
         photos={media.map(mediaKey => ({
           height: mediaManifest[mediaKey].thumbnailDim.height,
           src: mediaManifest[mediaKey].thumbnailSrc,
