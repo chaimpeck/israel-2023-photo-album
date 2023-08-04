@@ -3,7 +3,10 @@ import PhotoAlbum from 'react-photo-album';
 interface GalleryProps {
   mediaEvent: MediaEvent;
   mediaManifest: MediaManifest;
-  onClickImage: (imgSrc: string) => void;
+  onClickImage: (
+    index: number,
+    mediaGroup: MediaEvent['mediaGroups'][0]
+  ) => void;
 }
 
 export function Gallery({
@@ -13,8 +16,6 @@ export function Gallery({
 }: GalleryProps) {
   const { mediaGroups } = mediaEvent;
 
-  console.log('HERE', mediaGroups);
-
   return mediaGroups.map(({ description, media, title }) => (
     <div key={title}>
       <h2>{title}</h2>
@@ -23,14 +24,14 @@ export function Gallery({
         layout="columns"
         columns={5}
         onClick={({ index }) =>
-          onClickImage(mediaManifest[media[index]].fullSrc)
+          onClickImage(index, { description, media, title })
         }
         photos={media.map(mediaKey => ({
           height: mediaManifest[mediaKey].thumbnailDim.height,
           src: mediaManifest[mediaKey].thumbnailSrc,
           width: mediaManifest[mediaKey].thumbnailDim.width,
         }))}
-        renderPhoto={({ photo, wrapperStyle, renderDefaultPhoto }) => (
+        renderPhoto={({ wrapperStyle, renderDefaultPhoto }) => (
           <div style={{ position: 'relative', ...wrapperStyle }}>
             {renderDefaultPhoto({ wrapped: true })}
           </div>

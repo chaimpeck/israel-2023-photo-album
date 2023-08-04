@@ -1,15 +1,15 @@
 import Accordion from 'react-bootstrap/Accordion';
 import 'bootswatch/dist/darkly/bootstrap.min.css';
 import './App.css';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Gallery } from './components/Gallery';
-import AccordionContext from 'react-bootstrap/AccordionContext';
-import Lightbox from 'react-image-lightbox';
+import Lightbox, { type ILightBoxProps } from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
 
 function App() {
   const [mediaEventData, setMediaEventData] = useState<MediaEventData>();
-  const [activeMediaEventIndex, setActiveMediaEventIndex] = useState<number>();
+  const [selectedMediaGroup, setSelectedMediaGroup] = useState<MediaGroup>();
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState<number>();
 
   useEffect(() => {
     const fetchMediaEvents = async () => {
@@ -21,62 +21,84 @@ function App() {
     void fetchMediaEvents();
   }, []);
 
-  // Make an object AccordinateItems that can keep track of the current active index
-  const AccordianItems = ({ children }: { children: any }) => {
-    const { activeEventKey } = useContext(AccordionContext);
-    useEffect(() => {
-      setActiveMediaEventIndex(
-        typeof activeEventKey === 'string'
-          ? parseInt(activeEventKey)
-          : undefined
-      );
-    }, [activeEventKey]);
+  if (mediaEventData === undefined) {
+    return <div>Loading...</div>;
+  }
 
-    return <>{children}</>;
-  };
+  const { mediaEvents, mediaManifest } = mediaEventData;
 
-  const activeImageKey =
-    activeMediaEventIndex !== undefined
-      ? mediaEventData?.mediaEvents?.[activeMediaEventIndex].mediaGroups[0]
-          .media[0]
-      : undefined;
+  const { media } = selectedMediaGroup ?? {};
 
-  const activeImage =
-    activeImageKey !== undefined
-      ? mediaEventData?.mediaManifest[activeImageKey]
-      : undefined;
+  const [prevMediaItem, selectedMediaItem, nextMediaItem] =
+    selectedMediaIndex === undefined || media === undefined
+      ? []
+      : [
+          mediaManifest[media[selectedMediaIndex - 1]],
+          mediaManifest[media[selectedMediaIndex]],
+          mediaManifest[media[selectedMediaIndex + 1]],
+        ];
 
-  console.log(activeImageKey, activeImage);
-
-  const [lightboxImage, setLightboxImage] = useState<string>();
+  const lightboxProps =
+    selectedMediaItem === undefined
+      ? undefined
+      : ({
+          mainSrc: selectedMediaItem.fullSrc,
+          mainSrcThumbnail: selectedMediaItem.thumbnailSrc,
+          nextSrc: nextMediaItem?.fullSrc,
+          nextSrcThumbnail: nextMediaItem?.thumbnailSrc,
+          prevSrc: prevMediaItem?.fullSrc,
+          prevSrcThumbnail: prevMediaItem?.thumbnailSrc,
+        } satisfies Pick<
+          ILightBoxProps,
+          | 'mainSrc'
+          | 'mainSrcThumbnail'
+          | 'nextSrc'
+          | 'nextSrcThumbnail'
+          | 'prevSrc'
+          | 'prevSrcThumbnail'
+        >);
 
   return (
     <div>
       <h1>The Peck&apos;s in Israel - 2023</h1>
-      <h2>Events {activeMediaEventIndex}</h2>
-      {lightboxImage !== undefined && (
+      {lightboxProps !== undefined && (
         <Lightbox
-          mainSrc={lightboxImage}
+          {...lightboxProps}
           onCloseRequest={() => {
-            setLightboxImage(undefined);
+            setSelectedMediaGroup(undefined);
+            setSelectedMediaIndex(undefined);
+          }}
+          onMoveNextRequest={() => {
+            if (selectedMediaIndex !== undefined) {
+              setSelectedMediaIndex(selectedMediaIndex + 1);
+            }
+          }}
+          onMovePrevRequest={() => {
+            if (selectedMediaIndex !== undefined) {
+              setSelectedMediaIndex(selectedMediaIndex - 1);
+            }
           }}
         />
       )}
       <Accordion flush>
-        <AccordianItems>
-          {mediaEventData?.mediaEvents.map((mediaEvent, index) => (
-            <Accordion.Item key={mediaEvent.title} eventKey={`${index}`}>
-              <Accordion.Header>{mediaEvent.title}</Accordion.Header>
-              <Accordion.Body>
-                <Gallery
-                  mediaEvent={mediaEvent}
-                  mediaManifest={mediaEventData.mediaManifest}
-                  onClickImage={(imgSrc: string) => setLightboxImage(imgSrc)}
-                />
-              </Accordion.Body>
-            </Accordion.Item>
-          ))}
-        </AccordianItems>
+        {mediaEvents.map((mediaEvent, index) => (
+          <Accordion.Item key={mediaEvent.title} eventKey={`${index}`}>
+            <Accordion.Header>{mediaEvent.title}</Accordion.Header>
+            <Accordion.Body>
+              <Gallery
+                mediaEvent={mediaEvent}
+                mediaManifest={mediaManifest}
+                onClickImage={(
+                  index: number,
+                  { description, media, title }
+                ) => {
+                  setSelectedMediaGroup({ description, media, title });
+                  setSelectedMediaIndex(index);
+                }}
+              />
+            </Accordion.Body>
+          </Accordion.Item>
+        ))}
       </Accordion>
     </div>
   );

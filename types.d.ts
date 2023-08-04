@@ -7,13 +7,15 @@ interface Media {
 
 type MediaManifest = Record<string, Media>;
 
+interface MediaGroup {
+  description: string;
+  media: string[];
+  title: string;
+}
+
 interface MediaEvent {
   baseUrl: string;
-  mediaGroups: Array<{
-    description: string;
-    media: string[];
-    title: string;
-  }>;
+  mediaGroups: MediaGroup[];
   title: string;
 }
 
