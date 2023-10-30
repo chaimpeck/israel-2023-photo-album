@@ -3,13 +3,14 @@ import 'bootswatch/dist/darkly/bootstrap.min.css';
 import './App.css';
 import { useEffect, useState } from 'react';
 import { Gallery } from './components/Gallery';
-import Lightbox, { type ILightBoxProps } from 'react-image-lightbox';
-import 'react-image-lightbox/style.css';
+import { Lightbox } from './components/Lightbox';
 
 function App() {
   const [mediaEventData, setMediaEventData] = useState<MediaEventData>();
   const [selectedMediaGroup, setSelectedMediaGroup] = useState<MediaGroup>();
-  const [selectedMediaIndex, setSelectedMediaIndex] = useState<number>();
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState<
+    number | undefined
+  >();
 
   useEffect(() => {
     const fetchMediaEvents = async () => {
@@ -27,57 +28,15 @@ function App() {
 
   const { mediaEvents, mediaManifest } = mediaEventData;
 
-  const { media } = selectedMediaGroup ?? {};
-
-  const [prevMediaItem, selectedMediaItem, nextMediaItem] =
-    selectedMediaIndex === undefined || media === undefined
-      ? []
-      : [
-          mediaManifest[media[selectedMediaIndex - 1]],
-          mediaManifest[media[selectedMediaIndex]],
-          mediaManifest[media[selectedMediaIndex + 1]],
-        ];
-
-  const lightboxProps =
-    selectedMediaItem === undefined
-      ? undefined
-      : ({
-          mainSrc: selectedMediaItem.fullSrc,
-          mainSrcThumbnail: selectedMediaItem.thumbnailSrc,
-          nextSrc: nextMediaItem?.fullSrc,
-          nextSrcThumbnail: nextMediaItem?.thumbnailSrc,
-          prevSrc: prevMediaItem?.fullSrc,
-          prevSrcThumbnail: prevMediaItem?.thumbnailSrc,
-        } satisfies Pick<
-          ILightBoxProps,
-          | 'mainSrc'
-          | 'mainSrcThumbnail'
-          | 'nextSrc'
-          | 'nextSrcThumbnail'
-          | 'prevSrc'
-          | 'prevSrcThumbnail'
-        >);
-
   return (
     <div>
       <h1>The Peck&apos;s in Israel - 2023</h1>
-      {lightboxProps !== undefined && (
+      {selectedMediaGroup !== undefined && (
         <Lightbox
-          {...lightboxProps}
-          onCloseRequest={() => {
-            setSelectedMediaGroup(undefined);
-            setSelectedMediaIndex(undefined);
-          }}
-          onMoveNextRequest={() => {
-            if (selectedMediaIndex !== undefined) {
-              setSelectedMediaIndex(selectedMediaIndex + 1);
-            }
-          }}
-          onMovePrevRequest={() => {
-            if (selectedMediaIndex !== undefined) {
-              setSelectedMediaIndex(selectedMediaIndex - 1);
-            }
-          }}
+          mediaGroup={selectedMediaGroup}
+          mediaManifest={mediaManifest}
+          selectedMediaIndex={selectedMediaIndex}
+          setSelectedMediaIndex={setSelectedMediaIndex}
         />
       )}
       <Accordion flush>

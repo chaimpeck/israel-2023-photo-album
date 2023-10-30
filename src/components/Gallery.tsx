@@ -1,4 +1,4 @@
-import PhotoAlbum from 'react-photo-album';
+import PhotoAlbum, { type RenderPhoto } from 'react-photo-album';
 
 interface GalleryProps {
   mediaEvent: MediaEvent;
@@ -9,6 +9,24 @@ interface GalleryProps {
   ) => void;
 }
 
+const renderPhoto: RenderPhoto = ({
+  photo,
+  wrapperStyle,
+  renderDefaultPhoto,
+}) => {
+  return (
+    <div
+      style={{
+        position: 'relative',
+        ...wrapperStyle,
+        border: photo.src.endsWith('.jpeg') ? '2px solid green' : '',
+      }}
+    >
+      {renderDefaultPhoto({ wrapped: true })}
+    </div>
+  );
+};
+
 export function Gallery({
   mediaEvent,
   mediaManifest,
@@ -16,8 +34,8 @@ export function Gallery({
 }: GalleryProps) {
   const { mediaGroups } = mediaEvent;
 
-  return mediaGroups.map(({ description, media, title }) => (
-    <div key={title}>
+  return mediaGroups.map(({ description, media, title }, mediaGroupIndex) => (
+    <div key={mediaGroupIndex}>
       <h2>{title}</h2>
       <p>{description}</p>
       <PhotoAlbum
@@ -31,11 +49,7 @@ export function Gallery({
           src: mediaManifest[mediaKey].thumbnailSrc,
           width: mediaManifest[mediaKey].thumbnailDim.width,
         }))}
-        renderPhoto={({ wrapperStyle, renderDefaultPhoto }) => (
-          <div style={{ position: 'relative', ...wrapperStyle }}>
-            {renderDefaultPhoto({ wrapped: true })}
-          </div>
-        )}
+        renderPhoto={renderPhoto}
       />
     </div>
   ));
