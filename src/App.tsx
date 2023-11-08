@@ -7,7 +7,7 @@ import { Lightbox } from './components/Lightbox';
 
 function App() {
   const [mediaEventData, setMediaEventData] = useState<MediaEventData>();
-  const [selectedMediaGroup, setSelectedMediaGroup] = useState<MediaGroup>();
+  const [selectedMediaEvent, setSelectedMediaEvent] = useState<MediaEvent>();
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<
     number | undefined
   >();
@@ -31,10 +31,10 @@ function App() {
   return (
     <div>
       <h1>The Peck&apos;s in Israel - 2023</h1>
-      {selectedMediaGroup !== undefined && (
+      {selectedMediaEvent !== undefined && (
         <Lightbox
-          mediaGroup={selectedMediaGroup}
           mediaManifest={mediaManifest}
+          selectedMediaEvent={selectedMediaEvent}
           selectedMediaIndex={selectedMediaIndex}
           setSelectedMediaIndex={setSelectedMediaIndex}
         />
@@ -47,12 +47,14 @@ function App() {
               <Gallery
                 mediaEvent={mediaEvent}
                 mediaManifest={mediaManifest}
-                onClickImage={(
-                  index: number,
-                  { description, media, title }
-                ) => {
-                  setSelectedMediaGroup({ description, media, title });
-                  setSelectedMediaIndex(index);
+                onClickImage={(index: number, mediaGroupIndex) => {
+                  const newMediaIndex =
+                    mediaEvent.mediaGroups
+                      .slice(0, mediaGroupIndex)
+                      .map(mediaGroup => mediaGroup.media.length)
+                      .reduce((s, a) => s + a, 0) + index;
+                  setSelectedMediaEvent(mediaEvent);
+                  setSelectedMediaIndex(newMediaIndex);
                 }}
               />
             </Accordion.Body>

@@ -112,7 +112,7 @@ def main():
 
         for media_id in sorted(media):
             media_item = media_manifest[media_id]
-            if "title" in media_item or "description" in media_item:
+            if media_item.get("title") or media_item.get("description"):
                 if len(current_media_group["media"]) > 0:
                     media_groups.append(current_media_group)
 
@@ -145,7 +145,7 @@ def main():
 
     from pprint import pprint
 
-    pprint(ordered_media_events)
+    # pprint(ordered_media_events)
 
     with open("starter-media-events.json", "w") as f:
         json.dump(

@@ -1,125 +1,170 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Overlay } from 'react-bootstrap';
 import YARLightbox, { type Slide } from 'yet-another-react-lightbox';
 import Video from 'yet-another-react-lightbox/plugins/video';
+import Form from 'react-bootstrap/Form';
 import 'yet-another-react-lightbox/styles.css';
 
+interface HideCaptionsSwitchProps {
+  hideCaptions: boolean;
+  toggleHideCaptions: () => void;
+}
+
+function HideCaptionsSwitch({
+  hideCaptions,
+  toggleHideCaptions,
+}: HideCaptionsSwitchProps) {
+  return (
+    <Form
+      style={{ left: '0', paddingLeft: 12, paddingTop: 6, position: 'fixed' }}
+    >
+      <Form.Check
+        label="Hide Captions"
+        type="switch"
+        checked={hideCaptions}
+        onChange={toggleHideCaptions}
+      />
+    </Form>
+  );
+}
+
 export interface LightboxProps {
-  mediaGroup: MediaGroup;
   mediaManifest: MediaManifest;
+  selectedMediaEvent: MediaEvent;
   selectedMediaIndex: number | undefined;
   setSelectedMediaIndex: (i: number | undefined) => void;
 }
 
 export function Lightbox({
-  mediaGroup,
   mediaManifest,
+  selectedMediaEvent,
   selectedMediaIndex,
   setSelectedMediaIndex,
 }: LightboxProps) {
-  const [showCaptions, setShowCaptions] = useState(false);
-  const slides = useMemo<Slide[]>(
+  const [canShowCaptions, setCanShowCaptions] = useState(false);
+  const [hideCaptions, setHideCaptions] = useState(false);
+  const slides = useMemo<Array<Slide & { description: string; title: string }>>(
     () =>
-      mediaGroup.media.map(key => {
-        const { fullDim, fullSrc, thumbnailDim, thumbnailSrc } =
-          mediaManifest[key];
+      selectedMediaEvent.mediaGroups.flatMap(mediaGroup =>
+        mediaGroup.media.map(key => {
+          const { fullDim, fullSrc, thumbnailDim, thumbnailSrc } =
+            mediaManifest[key];
 
-        if (fullSrc.endsWith('.mov')) {
+          if (fullSrc.endsWith('.mov')) {
+            return {
+              description: mediaGroup.description,
+              height: fullDim.height,
+              poster: thumbnailSrc,
+              sources: [
+                {
+                  src: fullSrc,
+                  type: 'video/mp4',
+                },
+              ],
+              title: mediaGroup.title,
+              type: 'video',
+              width: fullDim.width,
+            };
+          }
+
           return {
-            height: fullDim.height,
-            poster: thumbnailSrc,
-            sources: [
+            alt: mediaGroup.title,
+            description: mediaGroup.description,
+            src: encodeURI(fullSrc),
+            srcSet: [
               {
-                src: fullSrc,
-                type: 'video/mp4',
+                height: thumbnailDim.height,
+                src: encodeURI(thumbnailSrc),
+                width: thumbnailDim.width,
+              },
+              {
+                height: fullDim.height,
+                src: encodeURI(fullSrc),
+                width: fullDim.width,
               },
             ],
-            type: 'video',
-            width: fullDim.width,
+            title: mediaGroup.title,
+            type: 'image',
           };
-        }
-
-        return {
-          alt: mediaGroup.title,
-          src: encodeURI(fullSrc),
-          srcSet: [
-            {
-              height: thumbnailDim.height,
-              src: encodeURI(thumbnailSrc),
-              width: thumbnailDim.width,
-            },
-            {
-              height: fullDim.height,
-              src: encodeURI(fullSrc),
-              width: fullDim.width,
-            },
-          ],
-          title: mediaGroup.title,
-          type: 'image',
-        };
-      }),
-    [mediaGroup, mediaManifest]
+        })
+      ),
+    [mediaManifest, selectedMediaEvent]
   );
   const handleClose = useCallback(() => setSelectedMediaIndex(undefined), []);
 
   return (
     <>
       <YARLightbox
+        carousel={{ finite: true }}
         close={handleClose}
         index={selectedMediaIndex}
         open={selectedMediaIndex !== undefined}
         plugins={[Video]}
         on={{
-          entered: () => setShowCaptions(true),
-          exiting: () => setShowCaptions(false),
+          entered: () => setCanShowCaptions(true),
+          exiting: () => setCanShowCaptions(false),
+          view: ({ index }) => setSelectedMediaIndex(index),
         }}
         slides={slides}
+        toolbar={{
+          buttons: [
+            <HideCaptionsSwitch
+              hideCaptions={hideCaptions}
+              toggleHideCaptions={() => setHideCaptions(!hideCaptions)}
+              key="show-captions-switch"
+            />,
+            'close',
+          ],
+        }}
         video={{
           autoPlay: true,
           muted: true,
         }}
       />
-      <Overlay target={null} show={showCaptions}>
-        {({ ...props }) => (
-          <div
-            style={{
-              height: '100%',
-              pointerEvents: 'none',
-              position: 'fixed',
-              textShadow: '1px 1px 10px #fff, 1px 1px 10px #ccc',
-              top: 0,
-              transform: 'none',
-              width: '100%',
-              zIndex: 10000,
-            }}
-          >
+      {selectedMediaIndex !== undefined && (
+        <Overlay target={null} show={canShowCaptions && !hideCaptions}>
+          {({ ...props }) => (
             <div
               style={{
-                position: 'absolute',
-                top: '4em',
+                height: '100%',
+                pointerEvents: 'none',
+                position: 'fixed',
+                textShadow: '1px 1px 10px #fff, 1px 1px 10px #ccc',
+                top: 0,
+                transform: 'none',
                 width: '100%',
+                zIndex: 10000,
               }}
             >
-              <h3
+              <div
                 style={{
+                  position: 'absolute',
+                  top: '4em',
+                  width: '100%',
+                }}
+              >
+                <h3
+                  style={{
+                    textAlign: 'center',
+                  }}
+                >
+                  {selectedMediaEvent.title}:<br />
+                  {slides[selectedMediaIndex].title}
+                </h3>
+              </div>
+              <div
+                style={{
+                  bottom: '20px',
+                  position: 'absolute',
                   textAlign: 'center',
                 }}
               >
-                {mediaGroup.title}
-              </h3>
+                {slides[selectedMediaIndex].description}
+              </div>
             </div>
-            <div
-              style={{
-                bottom: '20px',
-                position: 'absolute',
-                textAlign: 'center',
-              }}
-            >
-              {mediaGroup.description}
-            </div>
-          </div>
-        )}
-      </Overlay>
+          )}
+        </Overlay>
+      )}
     </>
   );
 }
