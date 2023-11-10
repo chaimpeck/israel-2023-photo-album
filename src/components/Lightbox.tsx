@@ -176,7 +176,7 @@ export function Lightbox({
                 height: '100%',
                 pointerEvents: 'none',
                 position: 'fixed',
-                textShadow: '1px 1px 10px #fff, 1px 1px 10px #ccc',
+                textShadow: '1px 1px 6px #000, 1px 1px 10px #ccc',
                 top: 0,
                 transform: 'none',
                 width: '100%',
@@ -192,6 +192,7 @@ export function Lightbox({
               >
                 <h3
                   style={{
+                    fontSize: '36px',
                     textAlign: 'center',
                   }}
                 >
@@ -201,9 +202,12 @@ export function Lightbox({
               </div>
               <div
                 style={{
-                  bottom: '20px',
+                  bottom: '28px',
+                  fontSize: '22px',
+                  padding: '9px 2px',
                   position: 'absolute',
                   textAlign: 'center',
+                  width: '100%',
                 }}
               >
                 {slides[selectedMediaIndex].description}
