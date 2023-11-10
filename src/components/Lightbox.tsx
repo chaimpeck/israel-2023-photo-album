@@ -1,6 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Overlay } from 'react-bootstrap';
-import YARLightbox, { type Slide } from 'yet-another-react-lightbox';
+import YARLightbox, {
+  type Render,
+  type Slide,
+} from 'yet-another-react-lightbox';
 import Video from 'yet-another-react-lightbox/plugins/video';
 import Form from 'react-bootstrap/Form';
 import 'yet-another-react-lightbox/styles.css';
@@ -30,15 +33,21 @@ function HideCaptionsSwitch({
 
 export interface LightboxProps {
   mediaManifest: MediaManifest;
+  nextMediaEvent: MediaEvent | undefined;
+  prevMediaEvent: MediaEvent | undefined;
   selectedMediaEvent: MediaEvent;
   selectedMediaIndex: number | undefined;
+  setSelectedMediaEvent: (mediaEvent: MediaEvent | undefined) => void;
   setSelectedMediaIndex: (i: number | undefined) => void;
 }
 
 export function Lightbox({
   mediaManifest,
+  prevMediaEvent,
+  nextMediaEvent,
   selectedMediaEvent,
   selectedMediaIndex,
+  setSelectedMediaEvent,
   setSelectedMediaIndex,
 }: LightboxProps) {
   const [canShowCaptions, setCanShowCaptions] = useState(false);
@@ -92,6 +101,43 @@ export function Lightbox({
   );
   const handleClose = useCallback(() => setSelectedMediaIndex(undefined), []);
 
+  const render: Render = {};
+
+  if (
+    selectedMediaIndex === slides.length - 1 &&
+    nextMediaEvent !== undefined
+  ) {
+    render.buttonNext = () => (
+      <button
+        className="yarl__button yarl__navigation_next"
+        aria-label="Next"
+        onClick={() => {
+          setSelectedMediaEvent(nextMediaEvent);
+          setSelectedMediaIndex(0);
+        }}
+      >
+        Next: {nextMediaEvent.title}
+      </button>
+    );
+  }
+
+  if (selectedMediaIndex === 0 && prevMediaEvent !== undefined) {
+    render.buttonPrev = () => (
+      <button
+        className="yarl__button yarl__navigation_prev"
+        aria-label="Prev"
+        onClick={() => {
+          setSelectedMediaEvent(prevMediaEvent);
+          setSelectedMediaIndex(
+            prevMediaEvent.mediaGroups.flatMap(m => m.media).length - 1
+          );
+        }}
+      >
+        Prev: {prevMediaEvent.title}
+      </button>
+    );
+  }
+
   return (
     <>
       <YARLightbox
@@ -105,6 +151,7 @@ export function Lightbox({
           exiting: () => setCanShowCaptions(false),
           view: ({ index }) => setSelectedMediaIndex(index),
         }}
+        render={render}
         slides={slides}
         toolbar={{
           buttons: [

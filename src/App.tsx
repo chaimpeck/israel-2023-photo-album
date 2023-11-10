@@ -8,6 +8,8 @@ import { Lightbox } from './components/Lightbox';
 function App() {
   const [mediaEventData, setMediaEventData] = useState<MediaEventData>();
   const [selectedMediaEvent, setSelectedMediaEvent] = useState<MediaEvent>();
+  const [nextMediaEvent, setNextMediaEvent] = useState<MediaEvent>();
+  const [prevMediaEvent, setPrevMediaEvent] = useState<MediaEvent>();
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<
     number | undefined
   >();
@@ -22,6 +24,18 @@ function App() {
     void fetchMediaEvents();
   }, []);
 
+  // This is a little hacky. Consider revising this.
+  useEffect(() => {
+    if (selectedMediaEvent === undefined) {
+      return;
+    }
+
+    const index = mediaEvents.indexOf(selectedMediaEvent);
+    console.log(mediaEvents, index);
+    setNextMediaEvent(mediaEvents[index + 1]);
+    setPrevMediaEvent(mediaEvents[index - 1]);
+  }, [mediaEventData, selectedMediaEvent]);
+
   if (mediaEventData === undefined) {
     return <div>Loading...</div>;
   }
@@ -34,8 +48,11 @@ function App() {
       {selectedMediaEvent !== undefined && (
         <Lightbox
           mediaManifest={mediaManifest}
+          nextMediaEvent={nextMediaEvent}
+          prevMediaEvent={prevMediaEvent}
           selectedMediaEvent={selectedMediaEvent}
           selectedMediaIndex={selectedMediaIndex}
+          setSelectedMediaEvent={setSelectedMediaEvent}
           setSelectedMediaIndex={setSelectedMediaIndex}
         />
       )}
